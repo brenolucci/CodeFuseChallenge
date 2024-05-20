@@ -1,5 +1,2 @@
-// import { server } from "./server";
-
-// server();
-
-console.log('maluco')
+import { server } from "./server";
+server();
