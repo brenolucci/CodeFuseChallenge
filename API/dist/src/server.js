@@ -8,26 +8,26 @@ Object.defineProperty(exports, "server", {
         return server;
     }
 });
-const _http = require("http");
-const _express = /*#__PURE__*/ _interop_require_default(require("express"));
-const _config = require("./database/config");
+const _supabaseconfig = /*#__PURE__*/ _interop_require_default(require("./config/supabase.config"));
 function _interop_require_default(obj) {
     return obj && obj.__esModule ? obj : {
         default: obj
     };
 }
-const server = async ()=>{
-    const app = (0, _express.default)();
+const server = (app)=>{
     app.get("/", async (req, res)=>{
-        const { data, error } = await _config.supabase.from('books').select();
-        res.json(JSON.stringify({
-            data,
-            error,
-            SUPABASE_URL: process.env.SUPABASE_URL
-        }));
+        const { data, error } = await _supabaseconfig.default.from('books').select();
+        if (error) {
+            return res.status(500).json({
+                error: error.message
+            });
+        }
+        res.json({
+            data
+        });
     });
-    const server = (0, _http.createServer)(app);
-    server.listen(8000, ()=>{
-        console.log(`Server running in 8000`);
+    const PORT = process.env.PORT || 8000;
+    app.listen(PORT, ()=>{
+        console.log(`Servidor rodando na porta ${PORT}`);
     });
 };
