@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, TextField, Box, Typography, Paper, IconButton } from '@mui/material';
+import { Button, TextField, Box, Typography, Paper, IconButton, CircularProgress } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import SectionForm from './SectionForm';
 
@@ -19,6 +19,7 @@ interface Book {
 }
 
 const BookForm: React.FC = () => {
+  const [loading, setLoading] = useState(false);
   const [book, setBook] = useState<Book>({
     title: '',
     isbn: '',
@@ -53,9 +54,26 @@ const BookForm: React.FC = () => {
     setBook({ ...book, sections: newSections });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     console.log(book);
-    // Lógica para salvar o livro e suas seções
+    setLoading(true);
+    try {
+      const result = await fetch('http://localhost:8000/api/books', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(book),
+      });
+      if (result.ok) {
+        // Lógica para tratar sucesso
+      } else {
+        // Lógica para tratar falha
+      }
+    } catch (error) {
+      console.error('Erro ao salvar o livro:', error);
+    }
+    setLoading(false);
   };
 
   return (
@@ -96,10 +114,10 @@ const BookForm: React.FC = () => {
         ))}
       </Box>
       <IconButton onClick={handleAddSection}>
-        <AddIcon />
+        {loading ? <CircularProgress size={24} /> : <AddIcon />}
       </IconButton>
-      <Button variant="contained" color="primary" onClick={handleSubmit}>
-        Salvar Livro
+      <Button variant="contained" color="primary" onClick={handleSubmit} disabled={loading}>
+        {loading ? <CircularProgress size={24} /> : 'Salvar Livro'}
       </Button>
     </Paper>
   );

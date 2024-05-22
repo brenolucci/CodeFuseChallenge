@@ -1,13 +1,21 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import BookForm from './components/BookForm';
-import { Container } from '@mui/material';
+import { Box } from '@mui/material';
+import HomePage from './pages/Landspace/HomePage';
 
 const App: React.FC = () => {
   return (
-    <Container>
-      <BookForm />
-    </Container>
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
+        textAlign: 'center',
+      }}
+    >
+      <HomePage />
+    </Box>
   );
 };
 
