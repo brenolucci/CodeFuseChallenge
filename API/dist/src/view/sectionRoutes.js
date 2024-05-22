@@ -1,4 +1,3 @@
-// src/routes/bookRoutes.ts
 "use strict";
 Object.defineProperty(exports, "__esModule", {
     value: true
@@ -10,8 +9,8 @@ Object.defineProperty(exports, "default", {
     }
 });
 const _express = require("express");
-const _bookController = require("../controllers/bookController");
+const _sectionController = require("../controllers/sectionController");
 const router = (0, _express.Router)();
-router.post('/books', _bookController.createBook);
-router.get('/books', _bookController.getBooks);
+router.post('/sections', _sectionController.createSection);
+router.get('/sections', _sectionController.getSectionsByBook);
 const _default = router;

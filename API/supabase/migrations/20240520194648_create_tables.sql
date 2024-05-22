@@ -2,6 +2,7 @@
 CREATE TABLE books (
     id SERIAL PRIMARY KEY,
     title TEXT NOT NULL,
+    -- TODO: this should be unique, you can't add 2 of the same in db
     isbn TEXT NOT NULL,
     pagesQuantity INT NOT NULL
 );
