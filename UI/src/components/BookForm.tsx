@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, TextField, Box, Typography, Paper, IconButton, CircularProgress } from '@mui/material';
+import { Button, TextField, Box, Typography, Paper, IconButton, CircularProgress, Snackbar, Alert } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import SectionForm from './SectionForm';
 
@@ -9,6 +9,7 @@ interface Section {
   sectionName: string;
   sectionSequence: string;
   subSections: Section[];
+  sectionFatherId?: string;
 }
 
 interface Book {
@@ -26,6 +27,8 @@ const BookForm: React.FC = () => {
     pagesQuantity: 0,
     sections: [],
   });
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -55,26 +58,61 @@ const BookForm: React.FC = () => {
   };
 
   const handleSubmit = async () => {
-    console.log(book);
+    function flattenSections(sections: Section[], sectionFatherId: undefined | string = undefined, bookId: string) {
+      const flattened: Omit <Section, 'subSections'>[] = [];
+  
+      sections.forEach((section, index) => {
+        const { subSections: subSections, ...sectionData } = section;
+        const sectionWithParent = { ...sectionData, sectionFatherId, bookId, sectionSequence: `${index}` };
+        flattened.push(sectionWithParent);
+  
+        if (subSections && subSections.length > 0) {
+          const subSectionsFlattened = flattenSections(subSections, sectionWithParent.sectionName, bookId);
+          flattened.push(...subSectionsFlattened);
+        }
+      });
+  
+      return flattened;
+    }
+  
     setLoading(true);
     try {
-      const result = await fetch('http://localhost:8000/api/books', {
+      const data = await fetch('http://localhost:8000/api/books', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(book),
+        body: JSON.stringify({
+          title: book.title,
+          isbn: book.isbn,
+          pages_quantity: book.pagesQuantity
+        }),
       });
-      if (result.ok) {
-        // Lógica para tratar sucesso
+      const result = await data.json();
+      if (result.data) {
+        const sections = flattenSections(book.sections, 'root', result.data[0].id)
+  
+        const sectionsData = await fetch('http://localhost:8000/api/sections', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(sections),
+        });
+        const sectionsResult = await sectionsData.json();
+        console.log('🚀🚀🚀🚀🚀 => result:', sectionsResult);
+  
+        setSuccessMessage('Livro salvo com sucesso!');
       } else {
-        // Lógica para tratar falha
+        setErrorMessage('Erro ao salvar o livro. Verifique os dados e tente novamente.');
       }
     } catch (error) {
+      setErrorMessage('Erro ao salvar o livro. Tente novamente mais tarde.');
       console.error('Erro ao salvar o livro:', error);
     }
     setLoading(false);
   };
+  
 
   return (
     <Paper sx={{ p: 2 }}>
@@ -119,8 +157,19 @@ const BookForm: React.FC = () => {
       <Button variant="contained" color="primary" onClick={handleSubmit} disabled={loading}>
         {loading ? <CircularProgress size={24} /> : 'Salvar Livro'}
       </Button>
+      <Snackbar open={Boolean(errorMessage)} autoHideDuration={6000} onClose={() => setErrorMessage(null)}>
+        <Alert onClose={() => setErrorMessage(null)} severity="error" sx={{ width: '100%' }}>
+          {errorMessage}
+        </Alert>
+      </Snackbar>
+      <Snackbar open={Boolean(successMessage)} autoHideDuration={6000} onClose={() => setSuccessMessage(null)}>
+        <Alert onClose={() => setSuccessMessage(null)} severity="success" sx={{ width: '100%' }}>
+          {successMessage}
+        </Alert>
+      </Snackbar>
     </Paper>
   );
+  
 };
 
 export default BookForm;

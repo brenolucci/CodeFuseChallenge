@@ -1,0 +1,2 @@
+ALTER TABLE sections
+DROP CONSTRAINT section_father_id_fkey;

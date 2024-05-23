@@ -23,29 +23,33 @@ function _interop_require_default(obj) {
     };
 }
 const createSection = async (req, res)=>{
-    const { page_number_start, page_number_end, section_name, section_sequence, book_id, section_father_id } = req.body;
-    const { data: newSection, error } = await _supabaseconfig.default.from('sections').upsert([
-        {
-            page_number_start,
-            page_number_end,
-            section_name,
-            section_sequence,
-            book_id,
-            section_father_id
-        }
-    ]).select();
+    const sections = req.body;
+    const parsedSections = sections.map((section)=>{
+        return {
+            page_number_start: section.pageNumberStart,
+            page_number_end: section.pageNumberEnd,
+            section_name: section.sectionName,
+            section_sequence: section.sectionSequence,
+            book_id: section.bookId,
+            section_father_id: section.sectionFatherId
+        };
+    });
+    const { data: newSections, error } = await _supabaseconfig.default.from('sections').upsert(parsedSections).select().returns();
     if (error) {
         return res.status(500).json({
             error: error.message
         });
     }
     res.status(201).json({
-        newSection
+        newSections
     });
 };
 const getSectionsByBook = async (req, res)=>{
     const { bookId } = req.params;
     const { data: sections, error } = await _supabaseconfig.default.from('sections').select('*').eq('bookId', bookId).returns();
+    // TODO: before returning the sections, we need to parse it back to nested (tree structure) so we can show it on ui
+    // USE THE SEQUENCE ID TO SORT THE SIBLINGS
+    // USE THE FATHERID TO SORT THE SECTIONS.
     if (error) {
         return res.status(500).json({
             error: error.message

@@ -1,36 +1,93 @@
 import { Request, Response } from 'express';
 import supabase from '../config/supabase.config';
+import SectionDTO from '../dtos/SectionDTO'; // Importe o DTO para Section
 import { Section } from '../models/Section';
-
 
 // Função para criar uma seção
 export const createSection = async (req: Request, res: Response) => {
-  const { page_number_start, page_number_end, section_name, section_sequence, book_id, section_father_id } = req.body;
+  const sections: SectionDTO[] = req.body; // Usar o DTO para tipar as seções
 
-  const { data: newSection, error } = await supabase
-    .from('sections')
-    .upsert([{ page_number_start, page_number_end, section_name, section_sequence, book_id, section_father_id }])
-    .select();
+  // Converter os dados para snake_case
+  const parsedSections = sections.map((section: SectionDTO) => {
+    return {
+      page_number_start: section.pageNumberStart,
+      page_number_end: section.pageNumberEnd,
+      section_name: section.sectionName,
+      section_sequence: section.sectionSequence,
+      book_id: section.bookId,
+      section_father_id: section.sectionFatherId
+    };
+  });
 
-  if (error) {
-    return res.status(500).json({ error: error.message });
+  try {
+    // Realizar a operação no banco de dados usando os dados em snake_case
+    const { data: newSections, error } = await supabase
+      .from('sections')
+      .upsert(parsedSections)
+      .select()
+      .returns<Section[]>(); // Usar o tipo correto para o retorno
+
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+
+    // Retornar os dados da nova seção em camelCase para o frontend
+    const parsedNewSections = newSections.map((section: Section) => {
+      return {
+        pageNumberStart: section.page_number_start,
+        pageNumberEnd: section.page_number_end,
+        sectionName: section.section_name,
+        sectionSequence: section.section_sequence,
+        bookId: section.book_id,
+        sectionFatherId: section.section_father_id
+      };
+    });
+
+    res.status(201).json({ newSections: parsedNewSections });
+  } catch (error) {
+    console.error('Error creating sections:', error);
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
-
-  res.status(201).json({ newSection });
 };
 
 // Função para obter todas as seções de um livro
 export const getSectionsByBook = async (req: Request, res: Response) => {
   const { bookId } = req.params;
 
-  const { data: sections, error } = await supabase
-    .from('sections')
-    .select('*')
-    .eq('bookId', bookId)
-    .returns<Section>();
+  try {
+    // Obter as seções do banco de dados
+    const { data: sectionsDB, error } = await supabase
+      .from('sections')
+      .select('*')
+      .eq('bookId', bookId)
+      .returns<Section[]>(); // Usar o tipo correto para o retorno
 
-  if (error) {
-    return res.status(500).json({ error: error.message });
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+
+    // Converter os dados do banco de dados de snake_case para camelCase
+    const sectionsDTO: SectionDTO[] = sectionsDB.map((section: Section) => {
+      return {
+        id: section.id,
+        pageNumberStart: section.page_number_start,
+        pageNumberEnd: section.page_number_end,
+        sectionName: section.section_name,
+        sectionSequence: section.section_sequence,
+        bookId: section.book_id,
+        sectionFatherId: section.section_father_id
+      };
+    });
+
+    // Retornar as seções em camelCase para o frontend
+    return res.status(200).json({ sections: sectionsDTO });
+  } catch (error) {
+    console.error('Error fetching sections:', error);
+    return res.status(500).json({ message: 'Internal Server Error' });
   }
-  res.status(200).json({ sections });
 };
+
+  
+  // TODO: before returning the sections, we need to parse it back to nested (tree structure) so we can show it on ui
+  // USE THE SEQUENCE ID TO SORT THE SIBLINGS
+  // USE THE FATHERID TO SORT THE SECTIONS.

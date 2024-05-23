@@ -10,7 +10,7 @@ const HomePage: React.FC = () => {
       <Typography variant="h4" style={{ marginTop: '2rem', marginBottom: '1rem' }}>
         Lista de livros cadastrado
       </Typography>
-      <BookForm></BookForm>
+      <BookForm />
     </Container>
   );
 };

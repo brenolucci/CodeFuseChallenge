@@ -5,5 +5,5 @@ export type Section = {
   section_name: string;
   section_sequence: string;
   book_id: number;
-  section_father_id?: number;
-};
+  section_father_id?: string;
+}; 

@@ -28,7 +28,7 @@ const createBook = async (req, res)=>{
         title,
         isbn,
         pages_quantity
-    }).select();
+    }).select().returns();
     if (error) {
         return res.status(500).json({
             error: error.message

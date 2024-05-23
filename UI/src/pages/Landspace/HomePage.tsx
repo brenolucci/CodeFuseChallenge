@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Typography, List, ListItem, ListItemText, CircularProgress, Button } from '@mui/material';
+import { Link } from 'react-router-dom'; // Importe o Link do react-router-dom
 import logo from '../../assets/codefuse-logo.svg';
 
 interface Section {
@@ -24,7 +25,6 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        //TODO mudar a BASE_URL pra da .env
         const response = await fetch('http://localhost:8000/api/books');
         const result = await response.json();
         setBooks(result.books);
@@ -42,9 +42,11 @@ const HomePage: React.FC = () => {
     <Container maxWidth="md">
       <img src={logo} alt="Logo" style={{ width: '150px', margin: '0 auto' }} />
       <Typography variant="h4" style={{ marginTop: '2rem', marginBottom: '1rem' }}>
-        Lista de livros cadastrado
+        Lista de livros cadastrados
       </Typography>
-      <Button >Cadastrar Livro</Button>
+      <Link to="/register" style={{ textDecoration: 'none' }}> {/* Use o componente Link do react-router-dom */}
+        <Button variant="contained" color="primary">Ir para a página de cadastro</Button>
+      </Link>
       {loading ? (
         <CircularProgress />
       ) : (

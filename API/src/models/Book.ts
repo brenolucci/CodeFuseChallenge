@@ -4,4 +4,3 @@ export type Book = {
     isbn: string;
     pages_quantity: number;
   };
-  

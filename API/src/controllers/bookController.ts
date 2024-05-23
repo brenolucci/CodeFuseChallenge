@@ -12,6 +12,7 @@ export const createBook = async (req: Request, res: Response) => {
     .from('books')
     .upsert({ title, isbn, pages_quantity })
     .select()
+    .returns<Book[]>();
 
   if (error) {
     return res.status(500).json({ error: error.message });

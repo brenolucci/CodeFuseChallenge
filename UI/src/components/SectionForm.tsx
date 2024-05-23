@@ -78,14 +78,6 @@ const SectionForm: React.FC<SectionFormProps> = ({ section, onChange }) => {
         fullWidth
         margin="normal"
       />
-      <TextField
-        label="Sequência da Seção"
-        name="sectionSequence"
-        value={localSection.sectionSequence}
-        onChange={handleChange}
-        fullWidth
-        margin="normal"
-      />
       <Box>
         {localSection.subSections.map((subSection, index) => (
           <SectionForm
