@@ -3,6 +3,33 @@ import supabase from '../config/supabase.config';
 import SectionDTO from '../dtos/SectionDTO'; // Importe o DTO para Section
 import { Section } from '../models/Section';
 
+// Função auxiliar para construir a estrutura aninhada
+const buildNestedStructure = (sections: any): any => {
+  // Create a map to store each section by its sectionName
+  const sectionMap = new Map();
+
+  // Initialize the map with each section and add a subSections array
+  sections.forEach((section: { subSections: never[]; sectionName: any; }) => {
+    section.subSections = [];
+    sectionMap.set(section.sectionName, section);
+  });
+
+  // Create the nested structure by adding each section to its parent's subSections array
+  sections.forEach((section: { sectionFatherId: string; }) => {
+    if (section.sectionFatherId !== 'root') {
+      const parentSection = sectionMap.get(section.sectionFatherId);
+      if (parentSection) {
+        parentSection.subSections.push(section);
+      }
+    }
+  });
+
+  // Collect the top-level sections
+  const nestedSections = sections.filter((section: { sectionFatherId: string; }) => section.sectionFatherId === 'root');
+
+  return nestedSections;
+};
+
 // Função para criar uma seção
 export const createSection = async (req: Request, res: Response) => {
   const sections: SectionDTO[] = req.body; // Usar o DTO para tipar as seções
@@ -52,14 +79,14 @@ export const createSection = async (req: Request, res: Response) => {
 
 // Função para obter todas as seções de um livro
 export const getSectionsByBook = async (req: Request, res: Response) => {
-  const { bookId } = req.params;
+  const { bookId } = req.query;
 
   try {
     // Obter as seções do banco de dados
     const { data: sectionsDB, error } = await supabase
       .from('sections')
       .select('*')
-      .eq('bookId', bookId)
+      .eq('book_id', bookId)
       .returns<Section[]>(); // Usar o tipo correto para o retorno
 
     if (error) {
@@ -79,15 +106,13 @@ export const getSectionsByBook = async (req: Request, res: Response) => {
       };
     });
 
-    // Retornar as seções em camelCase para o frontend
-    return res.status(200).json({ sections: sectionsDTO });
+    // Construir a estrutura aninhada
+    const nestedSections = buildNestedStructure(sectionsDTO);
+
+    // Retornar as seções aninhadas em camelCase para o frontend
+    return res.status(200).json({ sections: nestedSections });
   } catch (error) {
     console.error('Error fetching sections:', error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
 };
-
-  
-  // TODO: before returning the sections, we need to parse it back to nested (tree structure) so we can show it on ui
-  // USE THE SEQUENCE ID TO SORT THE SIBLINGS
-  // USE THE FATHERID TO SORT THE SECTIONS.

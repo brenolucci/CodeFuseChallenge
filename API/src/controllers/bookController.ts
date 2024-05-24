@@ -31,7 +31,19 @@ export const getBooks = async (req: Request, res: Response) => {
   if (error) {
     return res.status(500).json({ error: error.message });
   }
-
-
   res.status(200).json({ books });
+};
+
+
+export const getBook = async (req: Request, res: Response) => {
+  const { data: book, error } = await supabase
+    .from('books')
+    .select('*')
+    .eq('id', req.query.bookId)
+    .returns<Book>();
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+  res.status(200).json(book);
 };

@@ -77,7 +77,7 @@ const BookForm: React.FC = () => {
   
     setLoading(true);
     try {
-      const data = await fetch('http://localhost:8000/api/books', {
+      const data = await fetch(`${import.meta.env.VITE_BASE_URL}/books`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -92,15 +92,15 @@ const BookForm: React.FC = () => {
       if (result.data) {
         const sections = flattenSections(book.sections, 'root', result.data[0].id)
   
-        const sectionsData = await fetch('http://localhost:8000/api/sections', {
+        const sectionsData = await fetch(`${import.meta.env.VITE_BASE_URL}/sections`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify(sections),
         });
-        const sectionsResult = await sectionsData.json();
-        console.log('🚀🚀🚀🚀🚀 => result:', sectionsResult);
+        await sectionsData.json();
+      
   
         setSuccessMessage('Livro salvo com sucesso!');
       } else {

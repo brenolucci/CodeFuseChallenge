@@ -12,6 +12,9 @@ _export(exports, {
     createBook: function() {
         return createBook;
     },
+    getBook: function() {
+        return getBook;
+    },
     getBooks: function() {
         return getBooks;
     }
@@ -48,4 +51,13 @@ const getBooks = async (req, res)=>{
     res.status(200).json({
         books
     });
+};
+const getBook = async (req, res)=>{
+    const { data: book, error } = await _supabaseconfig.default.from('books').select('*').eq('id', req.query.bookId).returns();
+    if (error) {
+        return res.status(500).json({
+            error: error.message
+        });
+    }
+    res.status(200).json(book);
 };

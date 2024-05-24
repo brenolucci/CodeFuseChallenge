@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, List, ListItem, ListItemText, CircularProgress, Button } from '@mui/material';
-import { Link } from 'react-router-dom'; // Importe o Link do react-router-dom
+import { Container, Typography, List, ListItem, ListItemText, CircularProgress, Button, Box } from '@mui/material';
+import { Link } from 'react-router-dom';
 import logo from '../../assets/codefuse-logo.svg';
 
 interface Section {
@@ -12,9 +12,11 @@ interface Section {
 }
 
 interface Book {
+  id: string; // Adicionei a propriedade id
   title: string;
   isbn: string;
   pagesQuantity: number;
+  pages_quantity: number;
   sections: Section[];
 }
 
@@ -25,7 +27,7 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/books');
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL}/books`);
         const result = await response.json();
         setBooks(result.books);
       } catch (error) {
@@ -40,20 +42,22 @@ const HomePage: React.FC = () => {
 
   return (
     <Container maxWidth="md">
-      <img src={logo} alt="Logo" style={{ width: '150px', margin: '0 auto' }} />
-      <Typography variant="h4" style={{ marginTop: '2rem', marginBottom: '1rem' }}>
-        Lista de livros cadastrados
-      </Typography>
-      <Link to="/register" style={{ textDecoration: 'none' }}> {/* Use o componente Link do react-router-dom */}
-        <Button variant="contained" color="primary">Ir para a página de cadastro</Button>
-      </Link>
+      <Box sx={{ textAlign: 'center', mb: 4 }}>
+        <img src={logo} alt="Logo" style={{ width: '150px', margin: '0 auto' }} />
+        <Typography variant="h4" sx={{ mt: 4, mb: 2 }}>
+          Lista de livros cadastrados
+        </Typography>
+        <Link to="/register" style={{ textDecoration: 'none' }}>
+          <Button variant="contained" color="primary">Ir para a página de cadastro</Button>
+        </Link>
+      </Box>
       {loading ? (
         <CircularProgress />
       ) : (
         <List>
-          {books.map((book, index) => (
-            <ListItem key={index}>
-              <ListItemText primary={book.title} secondary={`ISBN: ${book.isbn} | Páginas: ${book.pagesQuantity}`} />
+          {books.map((book) => (
+            <ListItem key={book.id} component={Link} to={`/see-book/${book.id}`} button>
+              <ListItemText primary={book.title} secondary={`ISBN: ${book.isbn} | Páginas: ${book.pages_quantity || 'N/A'}`} />
             </ListItem>
           ))}
         </List>

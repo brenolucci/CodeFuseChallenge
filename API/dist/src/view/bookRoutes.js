@@ -14,4 +14,5 @@ const _bookController = require("../controllers/bookController");
 const router = (0, _express.Router)();
 router.post('/books', _bookController.createBook);
 router.get('/books', _bookController.getBooks);
+router.get('/book', _bookController.getBook);
 const _default = router;
